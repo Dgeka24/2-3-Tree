@@ -1,56 +1,29 @@
-//
-// Created by Lenovo on 28.01.2022.
-//
-
-#ifndef INC_23TREE_23TREE_H
-#define INC_23TREE_23TREE_H
-#include <vector>
+#pragma once
 #include <cstddef>
-#include <memory>
 #include <initializer_list>
+#include <memory>
+#include <vector>
 
-size_t counter = 0;
-
-//bool deleted[10000];
-
-template<class Val> class Set {
+template<class Value>
+class Set {
 private:
     struct Node {
         Node* parent = nullptr;
         std::vector<Node*> sons;
-        std::vector<Val> keys;
-        size_t number;
+        std::vector<Value> keys;
 
-        ~Node() {
-            parent = nullptr;
-            sons.clear();
-            keys.clear();
-            //std::cout << "Destructor " << number << std::endl;
-            //deleted[number] = false;
-        }
+        Node() = default;
 
-        Node() {
-            parent = nullptr;
-            number = counter++;
-            //std::cout << "Constructor " << number << std::endl;
-            //deleted[number] = true;
-        }
-        Node(Val x) {
-            parent = nullptr;
+        Node(Value x) {
             keys.push_back(x);
-            number = counter++;
-            //std::cout << "Constructor " << number << std::endl;
-            //deleted[number] = true;
         }
     };
-public:
-    Set() {
-        root = nullptr;
-        size_ = 0;
-    }
 
-    template<typename IteratorList>
-    Set(IteratorList it_begin, IteratorList it_end) {
+public:
+    Set() = default;
+
+    template <typename IteratorOfInitializerList>
+    Set(IteratorOfInitializerList it_begin, IteratorOfInitializerList it_end) {
         root = nullptr;
         size_ = 0;
         for (auto it = it_begin; it != it_end; ++it) {
@@ -58,36 +31,34 @@ public:
         }
     }
 
-    Set(std::initializer_list<Val> elements) {
+    Set(std::initializer_list<Value> elements) {
         root = nullptr;
         size_ = 0;
-        for (auto &x : elements) {
-            insert(x);
+        for (const auto &element : elements) {
+            insert(element);
         }
     }
 
-    Set(const Set<Val> &other) {
+    Set(const Set<Value>& other) {
         root = nullptr;
         size_ = 0;
-        for (auto &x : other) {
-            insert(x);
+        for (const auto &element : other) {
+            insert(element);
         }
     }
 
-    Set& operator=(const Set<Val> &other) {
-        if (this->root == other.root) {
+    Set& operator=(const Set<Value> &other) {
+        if (this == &other) {
             return *this;
         }
         destroy_dfs(root);
         root = nullptr;
         size_ = 0;
-        for (auto &x : other) {
-            insert(x);
+        for (const auto &element : other) {
+            insert(element);
         }
         return *this;
     }
-
-    //~Set() = default;
 
     ~Set() {
         destroy_dfs(root);
@@ -101,24 +72,21 @@ public:
         return size_ == 0;
     }
 
-    void insert(const Val& x) {
+    void insert(const Value& x) {
         Insert(x);
     }
 
-    void erase(const Val& x) {
+    void erase(const Value& x) {
         Erase(x);
     }
+
     class iterator {
     public:
-        ~iterator() {
-            node = nullptr;
-            delete node;
-            is_end = false;
-        }
         iterator() {
             node = nullptr;
             is_end = true;
         }
+
         iterator(Node* node_) {
             node = node_;
             if (node == nullptr) {
@@ -127,6 +95,7 @@ public:
                 is_end = false;
             }
         }
+
         iterator(Node* node_, bool flag) {
             node = node_;
             is_end = flag;
@@ -141,6 +110,7 @@ public:
             }
             return *this;
         }
+
         iterator operator++(int) {
             Node* node_ = get_next(node, true);
             iterator temp = *this;
@@ -151,6 +121,7 @@ public:
             }
             return temp;
         }
+
         iterator& operator--() {
             if (is_end) {
                 is_end = false;
@@ -164,6 +135,7 @@ public:
             }
             return *this;
         }
+
         iterator operator--(int) {
             if (is_end) {
                 is_end = false;
@@ -179,16 +151,18 @@ public:
             return temp;
         }
 
-        const Val& operator*() {
+        const Value& operator*() {
             return node->keys[0];
         }
-        const Val* operator->() {
+
+        const Value* operator->() {
             return &(node->keys[0]);
         }
 
         bool operator==(const iterator &other) const {
             return node == other.node && is_end == other.is_end;
         }
+
         bool operator!=(const iterator &other) const {
             return node != other.node || is_end != other.is_end;
         }
@@ -216,6 +190,7 @@ public:
                 }
             }
         }
+
         Node* get_prev(Node *t, bool up) {
             if (t->sons.size()==0 && !up) {
                 return t;
@@ -235,17 +210,17 @@ public:
                 }
             }
         }
-
     };
 
     iterator begin() const {
         return iterator(get_first());
     }
+
     iterator end() const {
         return iterator(get_last(), true);
     }
 
-    iterator find(const Val& x) const {
+    iterator find(const Value& x) const {
         Node* it = search(x);
         if (it == nullptr ||  ( (it->keys[0] < x) || (x < it->keys[0])  ) /*it->keys[0] != x*/) {
             return end();
@@ -254,7 +229,7 @@ public:
         }
     }
 
-    iterator lower_bound(const Val& x) const {
+    iterator lower_bound(const Value& x) const {
         Node* it = search(x);
         if (it == nullptr || it->keys[0] < x) {
             return end();
@@ -269,7 +244,7 @@ private:
     Node* root = nullptr;
     size_t size_ = 0;
 
-    bool isLeaf(Node *t) const {
+    bool is_leaf(Node *t) const {
         if (t == nullptr) {
             return true;
         }
@@ -280,17 +255,13 @@ private:
         if (t == nullptr) {
             return;
         }
-        if (isLeaf(t)) {
+        if (is_leaf(t)) {
             t = t->parent;
         }
         while (t != nullptr) {
             for (size_t i = 0; i < t->sons.size(); i++) {
-                //if (t->keys[i] < t->sons[i]->keys.back() || t->sons[i]->keys.back() < t->keys[i]) {
-                    t->keys[i] = t->sons[i]->keys.back();
-                //}
+                t->keys[i] = t->sons[i]->keys.back();
             }
-            //sort_children(t);
-
             if (t->sons.size() == 2) {
                 if (t->keys[1] < t->keys[0]) {
                     std::swap(t->keys[0], t->keys[1]);
@@ -319,17 +290,6 @@ private:
                     }
                 }
             }
-
-            /*for (size_t i = 0; i < t->sons.size(); i++) {
-                for (size_t j = i+1; j < t->sons.size(); j++) {
-                    if (t->keys[j] < t->keys[i]) {
-                        std::swap(t->keys[j], t->keys[i]);
-                        std::swap(t->sons[j], t->sons[i]);
-                    }
-                }
-            }*/
-
-
             t = t->parent;
         }
     }
@@ -372,9 +332,6 @@ private:
         t->sons.insert(it1, to_add);
         t->keys.insert(it2, to_add->keys.back());
         to_add->parent = t;
-        /*t->sons.push_back(to_add);
-        t->keys.push_back(to_add->keys.back());*/
-        //update_keys(to_add);
     }
 
     void delete_children(Node* t, Node* to_delete) {
@@ -390,10 +347,9 @@ private:
         t->sons.erase(it1);
         t->keys.erase(it2);
         to_delete->parent = nullptr;
-        //update_keys(t);
     }
 
-    Node* search(Val x) const {
+    Node* search(Value x) const {
         Node* t = root;
         if (t == nullptr) {
             return t;
@@ -418,7 +374,6 @@ private:
 
     void split(Node* t) {
         if (t->sons.size() <= 3) {
-            //update_keys(t)
             return;
         }
         Node* right = new Node();
@@ -433,10 +388,6 @@ private:
         left->sons[0]->parent = left;
         left->sons[1]->parent = left;
         left->parent = t->parent;
-
-        //update_keys(left);
-        //update_keys(right);
-
         if (left->parent == nullptr) {
             delete t;
             root = new Node();
@@ -444,24 +395,18 @@ private:
             right->parent = root;
             root->sons = {left, right};
             root->keys = {left->keys.back(), right->keys.back()};
-            //update_keys(root);
         } else {
             delete_children(t->parent, t);
             delete t;
             Node* parent = left->parent;
             add_to_children(parent, left);
             add_to_children(parent, right);
-            //update_keys(parent);
             split(parent);
-            //update_keys(parent);
             update_keys(left);
-            //update_keys(left);
-            //update_keys(right);
         }
-
     }
 
-    void Insert(Val x) {
+    void Insert(Value x) {
         Node* to_add = new Node(x);
         size_++;
         if (root == nullptr) {
@@ -527,14 +472,12 @@ private:
         delete_children(parent, brother);
         add_to_children(brother_of_parent, brother);
         delete t;
-        //update_keys(brother);
-        //update_keys(parent);
         split(brother_of_parent);
         update_keys(brother);
         erase(parent);
     }
 
-    void Erase(Val x) {
+    void Erase(Value x) {
         Node* t = search(x);
         if (t == nullptr || t->keys[0] < x || x < t->keys[0]) {
             return;
@@ -551,7 +494,7 @@ private:
         if (t == nullptr) {
             return t;
         }
-        while (!isLeaf(t)) {
+        while (!is_leaf(t)) {
             t = t->sons[0];
         }
         return t;
@@ -562,7 +505,7 @@ private:
         if (t == nullptr) {
             return t;
         }
-        while (!isLeaf(t)) {
+        while (!is_leaf(t)) {
             t = t->sons.back();
         }
         return t;
@@ -578,7 +521,4 @@ private:
         }
         delete t;
     }
-
 };
-
-#endif //INC_23TREE_23TREE_H
